@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataDoctor — Data Quality Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #00e5ff;
+    --accent2: #7b2fff;
+    --warn: #ff6b35;
+    --success: #00e676;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --card: #13131e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.85);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    border: 1px solid rgba(0,229,255,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(0,229,255,0.05);
+  }
+
+  /* PAGES */
+  .page-section {
+    display: none;
+    min-height: calc(100vh - 77px);
+    padding: 60px 48px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .page-section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* PAGE 1 — UPLOAD */
+  .hero {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 60px;
+  }
+
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: inline-block;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 .gradient {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  /* UPLOAD ZONE */
+  .upload-container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    padding: 64px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,229,255,0.04) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .upload-zone:hover::before, .upload-zone.drag-over::before { opacity: 1; }
+
+  .upload-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(123,47,255,0.1));
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    transition: transform 0.3s;
+  }
+
+  .upload-zone:hover .upload-icon { transform: scale(1.1); }
+
+  .upload-zone h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .upload-zone p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .file-types {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .file-type-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+  }
+
+  #file-input { display: none; }
+
+  .file-selected {
+    margin-top: 20px;
+    background: rgba(0,230,118,0.08);
+    border: 1px solid rgba(0,230,118,0.25);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .file-selected.show { display: flex; }
+
+  .file-selected .file-info { flex: 1; text-align: left; }
+  .file-selected .file-name { font-weight: 700; font-size: 15px; }
+  .file-selected .file-meta { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .btn-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .btn-remove:hover { color: var(--warn); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #00b4cc);
+    color: #000;
+    box-shadow: 0 0 30px rgba(0,229,255,0.25);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(0,229,255,0.4);
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--success), #00c853);
+    color: #000;
+    box-shadow: 0 0 30px rgba(0,230,118,0.2);
+  }
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(0,230,118,0.35);
+  }
+
+  .btn-warn {
+    background: linear-gradient(135deg, var(--accent2), #5b12cc);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(123,47,255,0.25);
+  }
+  .btn-warn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(123,47,255,0.4);
+  }
+
+  .actions {
+    margin-top: 28px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrapper {
+    display: none;
+    margin-top: 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+  }
+
+  .progress-wrapper.show { display: block; }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .progress-label .step-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .progress-label .pct {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .progress-bar-track {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.4s ease;
+    position: relative;
+  }
+
+  .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    background: rgba(255,255,255,0.3);
+    animation: shimmer 1s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { opacity: 0; transform: translateX(-20px); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(20px); }
+  }
+
+  .progress-steps {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  .progress-step.done { color: var(--success); }
+  .progress-step.active { color: var(--accent); }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .progress-step.done .step-dot { background: var(--success); }
+  .progress-step.active .step-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+  }
+
+  /* PAGE 2 — ISSUES */
+  .issues-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .issues-header h2 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  .issues-header p { color: var(--muted); margin-top: 6px; font-size: 14px; }
+
+  .issues-header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* SUMMARY CARDS */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .summary-card:hover { border-color: var(--accent); }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .summary-card.critical::before { background: var(--warn); }
+  .summary-card.warning::before { background: #ffcc00; }
+  .summary-card.info::before { background: var(--accent); }
+  .summary-card.success::before { background: var(--success); }
+
+  .summary-card .card-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .summary-card .card-value {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .summary-card.critical .card-value { color: var(--warn); }
+  .summary-card.warning .card-value { color: #ffcc00; }
+  .summary-card.info .card-value { color: var(--accent); }
+  .summary-card.success .card-value { color: var(--success); }
+
+  .summary-card .card-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ISSUE LIST */
+  .issues-section {
+    margin-bottom: 32px;
+  }
+
+  .issues-section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .issues-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .issue-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .issue-card:hover {
+    border-color: rgba(0,229,255,0.25);
+    transform: translateX(4px);
+  }
+
+  .issue-severity {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .sev-critical { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+  .sev-warning { background: #ffcc00; box-shadow: 0 0 8px rgba(255,204,0,0.5); }
+  .sev-info { background: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.4); }
+
+  .issue-body { flex: 1; }
+
+  .issue-type {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .issue-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .issue-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .issue-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .issue-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 3px 9px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+  }
+
+  .issue-impact {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .impact-high { background: rgba(255,107,53,0.15); color: var(--warn); }
+  .impact-medium { background: rgba(255,204,0,0.1); color: #ffcc00; }
+  .impact-low { background: rgba(0,229,255,0.08); color: var(--accent); }
+
+  /* PAGE 3 — RECTIFYING */
+  .rectify-container {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .rectify-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 28px;
+    background: linear-gradient(135deg, rgba(123,47,255,0.15), rgba(0,229,255,0.08));
+    border: 1px solid rgba(123,47,255,0.3);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .rectify-container h2 {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+  }
+
+  .rectify-container p {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+
+  .rectify-steps {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 32px;
+    text-align: left;
+  }
+
+  .rectify-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .rectify-step-item:last-child { border-bottom: none; }
+
+  .rs-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    flex-shrink: 0;
+    font-weight: 700;
+    transition: all 0.3s;
+  }
+
+  .rectify-step-item.done .rs-num {
+    background: rgba(0,230,118,0.15);
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .rectify-step-item.active .rs-num {
+    background: rgba(0,229,255,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .rs-body { flex: 1; }
+
+  .rs-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    transition: color 0.3s;
+  }
+
+  .rectify-step-item.done .rs-title { color: var(--success); }
+  .rectify-step-item.active .rs-title { color: var(--accent); }
+
+  .rs-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  .rs-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .rs-status.pending { background: var(--surface2); color: var(--muted); }
+  .rs-status.running { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .rs-status.done { background: rgba(0,230,118,0.1); color: var(--success); }
+
+  /* COMPLETE STATE */
+  .complete-state {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    background: var(--card);
+    border: 1px solid rgba(0,230,118,0.25);
+    border-radius: 20px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .complete-state.show { display: block; }
+
+  .complete-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+  }
+
+  .complete-state h3 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--success);
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+
+  .complete-state p { color: var(--muted); margin-bottom: 28px; }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item { text-align: center; }
+  .stat-item .stat-val { font-size: 28px; font-weight: 800; color: var(--success); letter-spacing: -1px; }
+  .stat-item .stat-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* LOADING SPINNER */
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    header { padding: 16px 20px; }
+    .page-section { padding: 40px 20px; }
+    .issues-header { flex-direction: column; }
+  }
+
+  /* TOOLTIP */
+  .tooltip-container { position: relative; display: inline-block; }
+
+  /* GLOW EFFECT ON LOGO */
+  .logo-icon {
+    box-shadow: 0 0 20px rgba(0,229,255,0.2);
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 20px rgba(0,229,255,0.2); }
+    to { box-shadow: 0 0 35px rgba(123,47,255,0.4); }
+  }
+
+  .nav-breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-breadcrumb .crumb.active { color: var(--accent); }
+  .nav-breadcrumb .sep { color: var(--border); }
+
+  #issue-count-badge {
+    background: rgba(255,107,53,0.15);
+    color: var(--warn);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,107,53,0.3);
+    margin-left: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🩺</div>
+    <div class="logo-text">Data<span>Doctor</span></div>
+  </div>
+  <div class="nav-breadcrumb" id="breadcrumb">
+    <span class="crumb active" id="bc1">Upload</span>
+    <span class="sep">›</span>
+    <span class="crumb" id="bc2">Analysis</span>
+    <span class="sep">›</span>
+    <span class="crumb" id="bc3">Rectify</span>
+  </div>
+  <div class="badge">AI-Powered</div>
+</header>
+
+<!-- PAGE 1: UPLOAD -->
+<div class="page page-section active" id="page-upload">
+  <div class="hero">
+    <div class="hero-tag">// Data Quality Intelligence</div>
+    <h1>Diagnose &<br><span class="gradient">Heal Your Data</span></h1>
+    <p>Upload any dataset and let AI automatically detect inconsistencies, missing values, outliers, duplicates, and data integrity issues — then fix them instantly.</p>
+  </div>
+
+  <div class="upload-container">
+    <div class="upload-zone" id="upload-zone">
+      <div class="upload-icon">📂</div>
+      <h3>Drop your dataset here</h3>
+      <p>or click to browse files</p>
+      <div class="file-types">
+        <span class="file-type-badge">CSV</span>
+        <span class="file-type-badge">JSON</span>
+        <span class="file-type-badge">TSV</span>
+        <span class="file-type-badge">TXT</span>
+      </div>
+      <input type="file" id="file-input" accept=".csv,.json,.tsv,.txt">
+    </div>
+
+    <div class="file-selected" id="file-selected">
+      <div style="font-size:28px">📄</div>
+      <div class="file-info">
+        <div class="file-name" id="file-name">dataset.csv</div>
+        <div class="file-meta" id="file-meta">—</div>
+      </div>
+      <button class="btn-remove" id="btn-remove" title="Remove">✕</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-analyze" disabled>
+        <span>🔬</span> Analyse Dataset
+      </button>
+    </div>
+
+    <div class="progress-wrapper" id="upload-progress">
+      <div class="progress-label">
+        <span class="step-text" id="progress-step-text">Initialising...</span>
+        <span class="pct" id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-steps" id="progress-steps">
+        <div class="progress-step" id="pstep-1"><div class="step-dot"></div> Parsing file structure</div>
+        <div class="progress-step" id="pstep-2"><div class="step-dot"></div> Detecting data types</div>
+        <div class="progress-step" id="pstep-3"><div class="step-dot"></div> Scanning for missing values</div>
+        <div class="progress-step" id="pstep-4"><div class="step-dot"></div> Finding duplicates</div>
+        <div class="progress-step" id="pstep-5"><div class="step-dot"></div> Analysing outliers</div>
+        <div class="progress-step" id="pstep-6"><div class="step-dot"></div> Checking data integrity</div>
+        <div class="progress-step" id="pstep-7"><div class="step-dot"></div> Generating AI remediation plan</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: ISSUES -->
+<div class="page page-section" id="page-issues">
+  <div class="issues-header">
+    <div>
+      <h2>Quality Report <span id="issue-count-badge">0 Issues</span></h2>
+      <p id="dataset-desc">Analysis complete — issues found across your dataset.</p>
+    </div>
+    <div class="issues-header-actions">
+      <button class="btn btn-secondary" id="btn-download-pdf">
+        <span>⬇</span> Download PDF
+      </button>
+      <button class="btn btn-warn" id="btn-go-rectify">
+        <span>⚕️</span> Rectify Issues
+      </button>
+    </div>
+  </div>
+
+  <div class="summary-grid" id="summary-grid"></div>
+
+  <div id="issues-list"></div>
+</div>
+
+<!-- PAGE 3: RECTIFY -->
+<div class="page page-section" id="page-rectify">
+  <div class="rectify-container">
+    <div class="rectify-icon">⚕️</div>
+    <h2>Rectifying<br>Your Data</h2>
+    <p>AI is now applying remediation strategies across all detected issues. This process validates, transforms, and reconstructs your dataset.</p>
+
+    <div class="progress-wrapper show" id="rectify-progress" style="margin-top:0; margin-bottom:24px; text-align:left;">
+      <div class="progress-label">
+        <span class="step-text" id="rectify-step-text">Starting remediation...</span>
+        <span class="pct" id="rectify-pct">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="rectify-fill"></div>
+      </div>
+    </div>
+
+    <div class="rectify-steps" id="rectify-steps-list"></div>
+
+    <div class="complete-state" id="complete-state">
+      <div class="complete-icon">✅</div>
+      <h3>Dataset Healed!</h3>
+      <p>All detected issues have been resolved. Your clean dataset is ready for download.</p>
+      <div class="stats-row" id="complete-stats"></div>
+      <button class="btn btn-success" id="btn-download-dataset">
+        <span>⬇</span> Download Rectified Dataset
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  
+// ─── STATE ───────────────────────────────────────────
+let appState = {
+  file: null,
+  fileContent: '',
+  analysisResult: null,
+  rectifiedData: null
+};
+
+// ─── DOM REFS ─────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+const fileInput  = document.getElementById('file-input');
+const fileSelectedEl = document.getElementById('file-selected');
+const fileNameEl = document.getElementById('file-name');
+const fileMetaEl = document.getElementById('file-meta');
+const btnRemove  = document.getElementById('btn-remove');
+const btnAnalyze = document.getElementById('btn-analyze');
+const uploadProgress = document.getElementById('upload-progress');
+const progressFill = document.getElementById('progress-fill');
+const progressPct  = document.getElementById('progress-pct');
+const progressStepText = document.getElementById('progress-step-text');
+
+// ─── NAVIGATION ───────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  updateBreadcrumb(id);
+  // 🔥 SCROLL TO TOP
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+}
+function updateBreadcrumb(pageId) {
+  document.getElementById('bc1').classList.remove('active');
+  document.getElementById('bc2').classList.remove('active');
+  document.getElementById('bc3').classList.remove('active');
+
+  if (pageId === 'page-upload') {
+    document.getElementById('bc1').classList.add('active');
+  } else if (pageId === 'page-issues') {
+    document.getElementById('bc2').classList.add('active');
+  } else if (pageId === 'page-rectify') {
+    document.getElementById('bc3').classList.add('active');
+  }
+}
+// ─── UPLOAD ZONE ─────────────────────────────────────
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); if (appState.file) {
+    setTimeout(() => {
+      document.getElementById("btn-analyze").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }, 200);
+  
+  }});
+btnRemove.addEventListener('click', () => {
+  appState.file = null;
+  appState.fileContent = '';
+  fileSelectedEl.classList.remove('show');
+  btnAnalyze.disabled = true;
+  fileInput.value = '';
+});
+
+function handleFile(file) {
+  const allowed = ['csv', 'json', 'tsv', 'txt'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!allowed.includes(ext)) { alert('Please upload a CSV, JSON, TSV, or TXT file.'); return; }
+  appState.file = file;
+  fileNameEl.textContent = file.name;
+  fileMetaEl.textContent = `${(file.size / 1024).toFixed(1)} KB · ${ext.toUpperCase()}`;
+  fileSelectedEl.classList.add('show');
+  btnAnalyze.disabled = false;
+
+  const reader = new FileReader();
+  reader.onload = e => { appState.fileContent = e.target.result; };
+  reader.readAsText(file);
+}
+
+// ─── ANALYSE ─────────────────────────────────────────
+btnAnalyze.addEventListener('click', startAnalysis);
+
+const STEPS = [
+  { id: 'pstep-1', label: 'Parsing file structure',       pct: 10 },
+  { id: 'pstep-2', label: 'Detecting data types',          pct: 22 },
+  { id: 'pstep-3', label: 'Scanning for missing values',   pct: 38 },
+  { id: 'pstep-4', label: 'Finding duplicates',            pct: 52 },
+  { id: 'pstep-5', label: 'Analysing outliers',            pct: 66 },
+  { id: 'pstep-6', label: 'Checking data integrity',       pct: 80 },
+  { id: 'pstep-7', label: 'Generating AI remediation plan', pct: 95 }
+];
+async function callBackendAnalysis() {
+  const formData = new FormData();
+  formData.append("file", appState.file);
+
+  try {
+    const res = await fetch("/analyze", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    const transformedIssues = data.issues.map((i, index) => ({
+      id: "ISS-" + (index + 1),
+      severity: i.type === "Missing Values" ? "critical" :
+                i.type === "Outliers" ? "warning" : "info",
+      type: i.type,
+      title: `${i.type} detected`,
+      description: `Column "${i.column || 'multiple'}" has ${i.count || 0} issues.`,
+      column: i.column || "Multiple",
+      affectedRows: i.count || 0,
+      impact: i.type === "Missing Values" ? "high" :
+              i.type === "Outliers" ? "medium" : "low",
+      remediation: "Automatically fixed during rectification"
+    }));
+
+    appState.analysisResult = {
+      summary: data.summary,
+      issues: transformedIssues,
+      remediationSteps: [
+        { id:1, title:'Remove Duplicates', description:'Delete duplicate rows' },
+        { id:2, title:'Fix Missing Values', description:'Fill missing values' },
+        { id:3, title:'Normalize Data', description:'Fix formatting issues' }
+      ]
+    };
+
+  } catch (err) {
+    console.error(err);
+    alert("Backend not running!");
+  }
+}
+async function startAnalysis() {
+  if (!appState.fileContent) { 
+    alert('Please wait for the file to load.'); 
+    return; 
+  }
+
+  btnAnalyze.disabled = true;
+  uploadProgress.classList.add('show');
+
+  for (let i = 0; i < STEPS.length; i++) {
+    const s = STEPS[i];
+
+    if (i > 0) {
+      document.getElementById(STEPS[i - 1].id).className = 'progress-step done';
+    }
+
+    document.getElementById(s.id).className = 'progress-step active';
+    progressStepText.textContent = s.label;
+    setProgress(s.pct);
+
+    if (i === 6) {
+      // ✅ Backend call
+      await callBackendAnalysis();
+
+      // ✅ fallback
+      if (!appState.analysisResult) {
+        alert("Analysis failed. Using demo data.");
+        appState.analysisResult = generateDemoAnalysis();
+      }
+
+    } else {
+      await delay(500 + Math.random() * 300);
+    }
+  }
+
+  document.getElementById(STEPS[STEPS.length - 1].id).className = 'progress-step done';
+  setProgress(100);
+  progressStepText.textContent = 'Analysis complete!';
+
+  await delay(600);
+  renderIssuesPage();
+  showPage('page-issues');
+}
+
+
+function generateDemoAnalysis() {
+  return {
+    summary: { rows: 1250, columns: 12, totalIssues: 9, criticalCount: 3, warningCount: 4, infoCount: 2, qualityScore: 62 },
+    issues: [
+      { id:'ISS-001', severity:'critical', type:'Missing Values', title:'Critical null values in primary key column', description:'The "customer_id" column has 87 missing values which break referential integrity and prevent joins with related tables.', column:'customer_id', affectedRows:87, impact:'high', remediation:'Assign sequential IDs or drop orphaned rows after review.' },
+      { id:'ISS-002', severity:'critical', type:'Duplicates', title:'Duplicate records detected', description:'142 fully duplicated rows found across all columns, inflating metrics and causing double-counting in aggregations.', column:'Multiple', affectedRows:142, impact:'high', remediation:'Deduplicate keeping first occurrence, log removed rows.' },
+      { id:'ISS-003', severity:'critical', type:'Type Mismatch', title:'Numeric column contains strings', description:'The "revenue" column has 34 entries like "$1,200.00" or "N/A" that cannot be parsed as float, breaking all numeric operations.', column:'revenue', affectedRows:34, impact:'high', remediation:'Strip currency symbols, parse numeric values, replace N/A with NaN.' },
+      { id:'ISS-004', severity:'warning', type:'Outliers', title:'Extreme outliers in age column', description:'12 rows have age values above 120 or below 0, likely data entry errors that will skew statistical analyses.', column:'age', affectedRows:12, impact:'medium', remediation:'Clamp to valid range [0, 120] or flag for manual review.' },
+      { id:'ISS-005', severity:'warning', type:'Invalid Format', title:'Malformed email addresses', description:'56 entries in the "email" column do not match standard email format (missing @ or domain), making email campaigns impossible.', column:'email', affectedRows:56, impact:'medium', remediation:'Validate with regex, nullify invalid entries, flag for re-collection.' },
+      { id:'ISS-006', severity:'warning', type:'Inconsistency', title:'Inconsistent date formats', description:'The "created_at" column mixes ISO 8601, US format (MM/DD/YYYY), and Unix timestamps across different rows.', column:'created_at', affectedRows:78, impact:'medium', remediation:'Normalise all dates to ISO 8601 UTC format.' },
+      { id:'ISS-007', severity:'warning', type:'Missing Values', title:'High null rate in optional fields', description:'"phone_number" has 38% null values which may indicate a data collection issue or pipeline problem.', column:'phone_number', affectedRows:475, impact:'medium', remediation:'Impute with placeholder or flag missing, review upstream pipeline.' },
+      { id:'ISS-008', severity:'info', type:'Inconsistency', title:'Mixed case in categorical column', description:'The "country" column has "USA", "usa", "United States" all referring to the same entity — 23 unique variants found.', column:'country', affectedRows:201, impact:'low', remediation:'Apply canonical mapping and title-case normalisation.' },
+      { id:'ISS-009', severity:'info', type:'Schema Violation', title:'Unexpected column detected', description:'Column "temp_flag" appears to be a temporary debugging column that should not be in production data.', column:'temp_flag', affectedRows:1250, impact:'low', remediation:'Remove the column from the dataset and update the schema.' }
+    ],
+    remediationSteps: [
+      { id:1, title:'Deduplicate Records', description:'Remove all exact duplicate rows, keeping the first occurrence.', fixes:1 },
+      { id:2, title:'Fix Type Mismatches', description:'Parse and coerce columns to their correct data types.', fixes:1 },
+      { id:3, title:'Handle Missing Values', description:'Apply smart imputation or flag nulls based on column importance.', fixes:2 },
+      { id:4, title:'Clamp & Validate Ranges', description:'Fix outliers and enforce domain-specific value constraints.', fixes:1 },
+      { id:5, title:'Normalise Formats', description:'Standardise dates, emails, phone numbers, and categorical values.', fixes:3 },
+      { id:6, title:'Schema Cleanup', description:'Remove temporary columns and enforce schema compliance.', fixes:1 }
+    ]
+  };
+}
+
+// ─── RENDER ISSUES PAGE ───────────────────────────────
+function renderIssuesPage() {
+  const r = appState.analysisResult;
+  const s = {
+  rows: r.summary.rows,
+  columns: r.summary.columns,
+  totalIssues: r.summary.totalIssues,
+  qualityScore: Math.max(100 - r.summary.totalIssues * 10, 20),
+  criticalCount: r.issues.filter(i => i.severity === "critical").length,
+  warningCount: r.issues.filter(i => i.severity === "warning").length,
+  infoCount: r.issues.filter(i => i.severity === "info").length
+};
+
+  document.getElementById('issue-count-badge').textContent = `${s.totalIssues} Issues`;
+  document.getElementById('dataset-desc').textContent =
+    `${s.rows.toLocaleString()} rows × ${s.columns} columns · Quality Score: ${s.qualityScore}/100`;
+
+  // Summary cards
+  const grid = document.getElementById('summary-grid');
+  grid.innerHTML = `
+    <div class="summary-card critical">
+      <div class="card-label">Critical</div>
+      <div class="card-value">${s.criticalCount}</div>
+      <div class="card-sub">Immediate attention</div>
+    </div>
+    <div class="summary-card warning">
+      <div class="card-label">Warnings</div>
+      <div class="card-value">${s.warningCount}</div>
+      <div class="card-sub">Should be fixed</div>
+    </div>
+    <div class="summary-card ${s.qualityScore >= 70 ? 'success' : s.qualityScore >= 40 ? 'warning' : 'critical'}">
+      <div class="card-label">Quality Score</div>
+      <div class="card-value">${s.qualityScore}</div>
+      <div class="card-sub">Out of 100</div>
+    </div>
+    <div class="summary-card info">
+      <div class="card-label">Total Rows</div>
+      <div class="card-value" style="font-size:28px">${s.rows.toLocaleString()}</div>
+      <div class="card-sub">${s.columns} columns</div>
+    </div>
+  `;
+
+  // Group issues by severity
+  const critical = r.issues.filter(i => i.severity === 'critical');
+  const warning  = r.issues.filter(i => i.severity === 'warning');
+  const info     = r.issues.filter(i => i.severity === 'info');
+
+  const list = document.getElementById('issues-list');
+  list.innerHTML = '';
+  if (critical.length) list.innerHTML += renderGroup('🔴 Critical Issues', critical);
+  if (warning.length)  list.innerHTML += renderGroup('🟡 Warnings', warning);
+  if (info.length)     list.innerHTML += renderGroup('🔵 Informational', info);
+}
+
+function renderGroup(title, issues) {
+  return `
+    <div class="issues-section">
+      <div class="issues-section-title">${title}</div>
+      ${issues.map(renderIssue).join('')}
+    </div>`;
+}
+
+function renderIssue(issue) {
+  const sevClass = { critical: 'sev-critical', warning: 'sev-warning', info: 'sev-info' }[issue.severity];
+  const impactClass = { high: 'impact-high', medium: 'impact-medium', low: 'impact-low' }[issue.impact];
+  return `
+    <div class="issue-card">
+      <div class="issue-severity ${sevClass}"></div>
+      <div class="issue-body">
+        <div class="issue-type">${issue.id} · ${issue.type}</div>
+        <div class="issue-title">${issue.title}</div>
+        <div class="issue-desc">${issue.description}</div>
+        <div class="issue-meta">
+          <span class="issue-tag">📊 ${issue.affectedRows} rows</span>
+          <span class="issue-tag">📁 ${issue.column}</span>
+          <span class="issue-tag">🔧 ${issue.remediation.substring(0,50)}${issue.remediation.length > 50 ? '…' : ''}</span>
+        </div>
+      </div>
+      <div class="issue-impact ${impactClass}">${issue.impact.toUpperCase()}</div>
+    </div>`;
+}
+// ─── DOWNLOAD CLEANED DATA ───────────────────────────
+document.getElementById('btn-download-dataset').addEventListener('click', () => {
+  if (!appState.rectifiedData) {
+    alert("No cleaned data available!");
+    return;
+  }
+
+  const blob = new Blob([appState.rectifiedData], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "cleaned_dataset.csv";
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+// ─── PDF DOWNLOAD ─────────────────────────────────────
+document.getElementById('btn-download-pdf').addEventListener('click', downloadPDF);
+
+function downloadPDF() {
+  const r = appState.analysisResult;
+  const s = r.summary;
+
+  let html = `
+  <div style="font-family:Arial,sans-serif;padding:40px;color:#111;max-width:900px;margin:auto">
+    <h1 style="color:#0099cc;margin-bottom:4px">Data Quality Report</h1>
+    <div style="color:#666;margin-bottom:30px;font-size:14px">
+      ${s.rows.toLocaleString()} rows × ${s.columns} columns · ${s.totalIssues} issues found
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:32px;font-weight:bold;color:#0099cc">${s.totalIssues}</div>
+      <div style="font-size:12px;color:#666">Total Issues</div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;margin-top:24px">
+      <tr style="background:#0099cc;color:white">
+        <th style="padding:10px">ID</th>
+        <th style="padding:10px">Type</th>
+        <th style="padding:10px">Title</th>
+        <th style="padding:10px">Description</th>
+        <th style="padding:10px">Rows Affected</th>
+        <th style="padding:10px">Column</th>
+      </tr>
+
+      ${r.issues.map((i, index) => {
+        const count = i.count ?? 1;
+        const title = `${i.type} detected`;
+        const description = `Column "${i.column}" has ${count} issue${count > 1 ? 's' : ''}.`;
+
+        return `
+          <tr>
+            <td style="padding:8px">${index + 1}</td>
+            <td style="padding:8px">${i.type}</td>
+            <td style="padding:8px">${title}</td>
+            <td style="padding:8px">${description}</td>
+            <td style="padding:8px">${count}</td>
+            <td style="padding:8px">${i.column && i.column.trim() !== '' ? i.column : '-'}</td>
+          </tr>
+        `;
+      }).join('')}
+    </table>
+  </div>
+  `;
+
+  const element = document.createElement("div");
+  element.innerHTML = html;
+
+  html2pdf()
+    .from(element)
+    .set({
+      margin: 10,
+      filename: "data_quality_report.pdf",
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    })
+    .save();
+}
+// ─── UTILS ───────────────────────────────────────────
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function setProgress(pct) {
+  progressFill.style.width = pct + '%';
+  progressPct.textContent = pct + '%';
+}
+// ─── RECTIFY BUTTON ───────────────────────────────────
+document.getElementById('btn-go-rectify').addEventListener('click', startRectify);
+function renderRectifySteps() {
+  const steps = [
+    { id: 1, title: "Remove Duplicates", desc: "Deleting duplicate rows" },
+    { id: 2, title: "Fix Missing Values", desc: "Filling null values" },
+    { id: 3, title: "Normalize Data", desc: "Fixing text and formats" },
+    { id: 4, title: "Validate Dataset", desc: "Checking data integrity" },
+    { id: 5, title: "Finalize Output", desc: "Preparing clean dataset" }
+  ];
+
+  const container = document.getElementById("rectify-steps-list");
+
+  container.innerHTML = steps.map(s => `
+    <div class="rectify-step-item" id="rs-${s.id}">
+      <div class="rs-num" id="rs-icon-${s.id}">${s.id}</div>
+      <div class="rs-body">
+        <div class="rs-title">${s.title}</div>
+        <div class="rs-desc">${s.desc}</div>
+      </div>
+      <div class="rs-status pending" id="rs-status-${s.id}">PENDING</div>
+    </div>
+  `).join("");
+}
+async function startRectify() {
+  if (!appState.file) {
+    alert("No file uploaded!");
+    return;
+  }
+
+  showPage('page-rectify');
+
+  // ✅ Render steps first
+  renderRectifySteps();
+
+  const rectFill = document.getElementById('rectify-fill');
+  const rectPct = document.getElementById('rectify-pct');
+  const rectText = document.getElementById('rectify-step-text');
+
+  const steps = [
+    { id: 1, title: "Remove Duplicates" },
+    { id: 2, title: "Fix Missing Values" },
+    { id: 3, title: "Normalize Data" },
+    { id: 4, title: "Validate Dataset" },
+    { id: 5, title: "Finalize Output" }
+  ];
+
+  const formData = new FormData();
+  formData.append("file", appState.file);
+
+  try {
+    // 🔥 Start backend call in parallel
+    const backendPromise = fetch("/rectify", {
+      method: "POST",
+      body: formData
+    });
+
+    // 🔄 Step animation loop
+    for (let i = 0; i < steps.length; i++) {
+      const s = steps[i];
+
+      // ✅ Previous step DONE
+      if (i > 0) {
+        const prev = steps[i - 1];
+
+        document.getElementById(`rs-${prev.id}`).classList.add("done");
+        document.getElementById(`rs-status-${prev.id}`).textContent = "DONE";
+        document.getElementById(`rs-icon-${prev.id}`).textContent = "✔";
+      }
+
+      // 🔄 Current step RUNNING
+      document.getElementById(`rs-${s.id}`).classList.add("active");
+      document.getElementById(`rs-status-${s.id}`).textContent = "RUNNING";
+      document.getElementById(`rs-icon-${s.id}`).innerHTML =
+        `<div class="spinner"></div>`;
+
+      // 📊 Update progress bar
+      const pct = Math.round(((i + 1) / steps.length) * 90);
+      rectFill.style.width = pct + "%";
+      rectPct.textContent = pct + "%";
+      rectText.textContent = s.title;
+
+      await delay(700);
+    }
+
+    // ⏳ Wait for backend response
+    const res = await backendPromise;
+    const data = await res.json();
+
+    if (data.error) {
+      alert("Error: " + data.error);
+      return;
+    }
+
+    // ✅ Save cleaned data
+    appState.rectifiedData = data.cleanedData;
+
+    // ✅ Mark last step DONE
+    const last = steps[steps.length - 1];
+    document.getElementById(`rs-${last.id}`).classList.add("done");
+    document.getElementById(`rs-status-${last.id}`).textContent = "DONE";
+    document.getElementById(`rs-icon-${last.id}`).textContent = "✔";
+
+    // ✅ Complete progress
+    rectFill.style.width = "100%";
+    rectPct.textContent = "100%";
+    rectText.textContent = "Completed";
+
+    await delay(400);
+
+    // 🎉 Show completion UI
+    document.getElementById('complete-state').classList.add('show');
+
+  } catch (err) {
+    console.error(err);
+    alert("Rectify failed!");
+  }
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+</html>

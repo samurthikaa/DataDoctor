@@ -1,0 +1,11 @@
+customer_id,name,age,email,revenue,country,created_at,phone_number
+1,Arun Kumar,25,arun.kumar@gmail.com,1200,India,2023-01-01,9876543210
+2,Priya Sharma,29,priyasharma#email.com,$1500,india,01/02/2023,9876543211
+3,Rahul Verma,200,rahul.verma@gmail.com,980,USA,1672531200,9876543212
+4,Sneha Iyer,22,sneha.iyer@gmail,N/A,India,2023-03-01,
+5,Karthik Raj,-5,karthik.raj@gmail.com,450,INDIA,03/15/2023,9876543214
+6,Meena Das,31,meena.das@gmail.com,760,United States,2023-04-01,9876543215
+7,Arun Kumar,25,arun.kumar@gmail.com,1200,India,2023-01-01,9876543210
+8,,,,,,,
+9,John Doe,45,john.doe@gmail.com,2000,USA,2023-05-01,9876543217
+10,Jane Smith,34,jane.smith@gmail.com,1800,usa,2023-06-01,9876543218
